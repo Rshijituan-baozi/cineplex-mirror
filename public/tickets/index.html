@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>Cineplex.com | Ticket Selection</title>
+<style>
+:root{--bg:#0a0b0d;--bg2:#141416;--bg3:#1e1e22;--text:#fff;--text2:#999;--text3:#666;--accent:#004ccc;--accent-h:#0038a0;--yellow:#ffd500;--blue:#1985FF;--border:#222;--radius:8px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+header{border-bottom:1px solid var(--border);padding:0 20px}
+header>div{display:flex;align-items:center;justify-content:space-between;height:56px}
+header button{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;display:flex}
+header h1{font-size:18px;font-weight:600}
+.timer{color:var(--yellow);font-size:16px;font-weight:700;min-width:48px;text-align:center}
+.timer.expiring{color:#ff4444}
+main{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative}
+.billboard{position:absolute;top:0;left:0;right:0;height:200px;background-size:cover;background-position:center;opacity:.2;mask-image:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,transparent 100%);z-index:0}
+.content{position:relative;z-index:1;display:flex;gap:32px;padding-top:24px}
+.left{flex:1;min-width:0}
+.right{width:370px;flex-shrink:0;position:sticky;top:80px;align-self:flex-start}
+.movie-block{display:flex;gap:20px;margin-bottom:16px}
+.poster{width:100px;min-width:100px;height:148px;border-radius:var(--radius);overflow:hidden;background:var(--bg3)}
+.poster img{width:100%;height:100%;object-fit:cover}
+.movie-info h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.badge{padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;border:1px solid var(--text3);color:var(--text2)}
+.detail-row{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--text2)}
+.detail-row .name{color:var(--text);font-weight:600}
+.fee-notice{background:var(--bg2);border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--text2);margin-bottom:20px;display:flex;align-items:flex-start;gap:8px}
+.fee-notice b{color:var(--text)}
+.fee-notice svg{flex-shrink:0;margin-top:2px;color:var(--text3)}
+.ticket-block{background:var(--bg2);border-radius:12px;padding:20px 24px}
+.ticket-header{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.ticket-header h3{font-size:16px;font-weight:600}
+.ticket-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.ticket-row:last-child{border-bottom:none}
+.ticket-label{font-size:15px;font-weight:500}
+.ticket-price{font-size:14px;color:var(--yellow);font-weight:600;margin-left:auto;margin-right:20px;min-width:60px;text-align:right}
+.qty-group{display:flex;align-items:center;gap:12px}
+.qty-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--text3);background:transparent;color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.qty-btn:hover{border-color:var(--text);background:var(--bg3)}
+.qty-btn:disabled{opacity:.25;cursor:default;border-color:var(--border)}
+.qty-val{font-size:16px;min-width:24px;text-align:center;font-weight:500}
+.summary{background:var(--bg2);border-radius:12px;padding:24px}
+.summary h3{font-size:18px;font-weight:700;margin-bottom:20px}
+.summary-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px}
+.summary-row.total{border-top:1px solid var(--border);margin-top:12px;padding-top:14px;font-size:16px;font-weight:700}
+.summary-row .val,.val{color:var(--yellow);font-weight:600}
+.continue-btn{width:100%;padding:14px;margin-top:16px;border:none;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s}
+.continue-btn:hover{background:var(--accent-h)}
+.continue-btn:disabled{opacity:.4;cursor:default}
+.loading{display:flex;align-items:center;justify-content:center;padding:80px 20px;color:var(--text2)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{background:#2a1015;border:1px solid #633;border-radius:var(--radius);padding:16px;color:#f88;margin-bottom:16px}
+.hidden{display:none!important}
+@media(max-width:860px){.content{flex-direction:column}.right{width:100%;position:static}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <button onclick="history.back()" aria-label="Back">
+      <svg width="17" height="16" fill="none"><path fill="currentColor" fill-rule="evenodd" d="m11.75 1-7 7 7 7v-1.414L6.164 7.999l5.586-5.585z"/></svg>
+    </button>
+    <h1>Ticket Selection</h1>
+    <span class="timer" id="timer">5:00</span>
+    <button onclick="window.close()" aria-label="Exit">
+      <svg width="17" height="16" fill="none"><path fill="currentColor" d="M2.25 14.707 1.543 14l6-6-6-6 .707-.707 6 6 6-6 .707.707zM10.25 9.293 14.957 14l-.707.707L9.543 10z"/></svg>
+    </button>
+  </div>
+</header>
+<main>
+  <div class="billboard" id="billboard"></div>
+  <div class="content">
+    <div class="left">
+      <div id="loading" class="loading"><div class="spinner"></div>Loading ticket options...</div>
+      <div id="error" class="hidden"></div>
+      <div id="page" class="hidden">
+        <div class="movie-block" id="movie-block"></div>
+        <div class="fee-notice">
+          <svg width="16" height="16" fill="none"><path fill="currentColor" fill-rule="evenodd" d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8" clip-rule="evenodd"/><path fill="currentColor" fill-rule="evenodd" d="M8.5 6.632v4.923h-1V6.632z"/><path fill="currentColor" d="M7.3 5.146a.7.7 0 1 1 1.4 0 .7.7 0 0 1-1.4 0"/></svg>
+          <span>Online Booking Fee of up to $1.50 may apply. <b>Fee does not apply for in-theatre purchases.</b></span>
+        </div>
+        <div class="ticket-block">
+          <div class="ticket-header">
+            <svg width="21" height="20" fill="none"><g fill="#1985FF"><path d="M7.608 0h5.668c2.112 0 3.823 2.035 3.823 4.548v10.364H3.785V4.548C3.785 2.035 5.5 0 7.608 0"/><path d="M20.445 16.026V3.85s.086-1.387-1.166-1.387-1.247 1.444-1.247 1.444V16.01l-7.69.023-7.479-.023V3.89s0-1.444-1.247-1.444S.45 3.832.45 3.832v12.177s-.254 3.974 4.435 3.974h11.12s-4.688.023 0 .023 4.435-3.974 4.435-3.974z"/></g></svg>
+            <h3>Tickets</h3>
+          </div>
+          <div id="ticket-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="summary">
+        <h3>Order Summary</h3>
+        <div id="summary-items"></div>
+        <div class="summary-row total"><span>Total</span><span class="val" id="total-price">$0.00</span></div>
+        <button class="continue-btn" id="continue-btn" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+const p=new URLSearchParams(location.search);
+const theatreId=p.get('theatreId'),showtimeId=p.get('showtimeId'),vistaHO=p.get('vistaHOCategoryCode')||'0000000001';
+let tickets=[],total=0,countdown=299;
+setInterval(()=>{countdown--;if(countdown<0)countdown=0;const m=Math.floor(countdown/60),s=countdown%60;document.getElementById('timer').textContent=m+':'+String(s).padStart(2,'0');if(countdown<60)document.getElementById('timer').classList.add('expiring')},1000);
+
+async function load(){const[sh,ty]=await Promise.all([fetch(`/prod/cpx/theatrical/api/v1/theatres/${theatreId}/showtimes/${showtimeId}?dbox=false`).then(r=>r.json()),(async()=>{await fetch(`/prod/ticketing/api/v1/ticketing-cart`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({LocationId:+theatreId,ShowtimeId:String(showtimeId),HeadOfficeAreaCategory:vistaHO,IsVistaHO:true})});return fetch(`/prod/ticketing/api/v1/theatre/${theatreId}/showtime/${showtimeId}/ticket-types`).then(r=>r.json())})()]);return{showtime:sh,types:ty}}
+
+(async()=>{try{const{showtime,types}=await load();tickets=(types.ticketCategories[0]?.tickets||[]).map(t=>({...t,quantity:0}));if(showtime.billboard?.desktopImageUrl)document.getElementById('billboard').style.backgroundImage=`url(${showtime.billboard.desktopImageUrl})`;const dt=new Date(showtime.showtime.showStartDateTime),ds=dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),ts=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});document.getElementById('movie-block').innerHTML=`<div class="poster">${showtime.mediumPosterImageUrl?`<img src="${showtime.mediumPosterImageUrl}" alt="${showtime.movie}">`:''}</div><div class="movie-info"><h2>${showtime.movie}</h2><div class="badges">${(showtime.experienceTypes||[]).map(e=>`<span class="badge">${e}</span>`).join('')}${showtime.localRating?`<span class="badge">${showtime.localRating}</span>`:''}${showtime.languageCode?`<span class="badge">${showtime.languageCode}</span>`:''}</div><div class="detail-row"><span>${ds}</span><span>·</span><span>${ts}</span></div><div class="detail-row" style="margin-top:6px"><span class="name">${showtime.theatre||''}</span></div>${showtime.location?`<div class="detail-row" style="margin-top:2px"><span>${showtime.location.address}, ${showtime.location.city}, ${showtime.location.provinceCode}</span></div>`:''}${showtime.showtime?.auditorium?`<div class="detail-row" style="margin-top:2px"><span>${showtime.showtime.auditorium}${showtime.showtime.seatsRemaining?' · '+showtime.showtime.seatsRemaining+' seats remaining':''}</span></div>`:''}</div>`;document.getElementById('ticket-list').innerHTML=tickets.map((t,i)=>`<div class="ticket-row"><span class="ticket-label">${t.name}</span><span class="ticket-price">$${t.pricePerTicket.valueIncludingTax.toFixed(2)}</span><div class="qty-group"><button class="qty-btn" onclick="chg(${i},-1)" ${t.quantity===0?'disabled':''}>−</button><span class="qty-val" id="q${i}">${t.quantity}</span><button class="qty-btn" onclick="chg(${i},1)">+</button></div></div>`).join('');document.getElementById('loading').classList.add('hidden');document.getElementById('page').classList.remove('hidden')}catch(e){document.getElementById('loading').classList.add('hidden');const el=document.getElementById('error');el.textContent=e.message;el.classList.remove('hidden')}})();
+
+function chg(i,d){const t=tickets[i];t.quantity=Math.max(0,Math.min(18,(t.quantity||0)+d));document.getElementById('q'+i).textContent=t.quantity;updateBtns(i);updateSummary()}
+function updateBtns(i){const row=document.querySelectorAll('.ticket-row')[i];if(row){const btns=row.querySelectorAll('.qty-btn');if(btns[0])btns[0].disabled=tickets[i].quantity===0}}
+function updateSummary(){total=0;const items=document.getElementById('summary-items');let h='';tickets.forEach(t=>{const q=t.quantity||0;if(q>0){const s=t.pricePerTicket.valueIncludingTax*q;total+=s;h+=`<div class="summary-row"><span>${t.name} × ${q}</span><span class="val">$${s.toFixed(2)}</span></div>`}});if(!h)h='<div class="summary-row" style="color:#999">No tickets selected</div>';items.innerHTML=h;document.getElementById('total-price').textContent='$'+total.toFixed(2);document.getElementById('continue-btn').disabled=total===0}
+document.getElementById('continue-btn').addEventListener('click',()=>{if(total>0)location.href=`/tickets/checkout/?theatreId=${theatreId}&showtimeId=${showtimeId}&vistaHOCategoryCode=${vistaHO}&selections=${btoa(JSON.stringify(tickets.filter(t=>t.quantity>0)))}`});
+</script>
+</body>
+</html>

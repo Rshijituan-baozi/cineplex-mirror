@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift Card — Purchase Complete</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#0f1923 0%,#1a1a2e 50%,#16213e 100%);color:#d6d9e6;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#1e2235;border:1px solid #2a2f47;border-radius:16px;padding:48px;text-align:center;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#18d46b,#0d9e4a);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:40px}
+h1{font-size:28px;margin-bottom:8px;color:#fff}
+.subtitle{color:#8d94ab;font-size:14px;margin-bottom:32px;line-height:1.6}
+.details{background:#2b3045;border-radius:8px;padding:20px;margin-bottom:24px}
+.detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #333a52;font-size:14px}
+.detail-row:last-child{border-bottom:none}
+.val{color:#18d46b;font-weight:bold}
+.note{font-size:12px;color:#6b7294;margin-top:16px;line-height:1.5}
+.btn{display:inline-block;background:#18d46b;color:#000;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;transition:.2s;margin-top:8px}
+.btn:hover{background:#14b85c}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🎁</div>
+  <h1>Gift Card Purchased!</h1>
+  <p class="subtitle">Your E-Gift Card has been sent to your email.<br>You will receive a link to download your digital gift pack within 24 hours.</p>
+  <div class="details" id="details">
+    <div class="detail-row"><span>Gift Card</span><span class="val" id="disp-amount">$0.00</span></div>
+    <div class="detail-row"><span>Gift Pack</span><span class="val">FREE</span></div>
+  </div>
+  <p class="note">🎬 Two (2) Free Adult General Admission Tickets<br>🍿 Two (2) Free Regular Popcorn<br><br>All coupons valid until December 30, 2026.</p>
+  <a href="/promos/movie-gift-pack?ic=cpx-sgpdeals" class="btn">View Promo Details</a>
+</div>
+
+<script>
+var p=new URLSearchParams(location.search);
+var amt=parseFloat(p.get('amount'))||0;
+document.getElementById('disp-amount').textContent='$'+amt.toFixed(2);
+</script>
+</body>
+</html>

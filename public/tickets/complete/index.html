@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>Cineplex.com | Order Complete</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0b0d;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#141416;border-radius:16px;padding:48px 40px;text-align:center;max-width:460px;width:90%}
+.card .icon{width:72px;height:72px;border-radius:50%;background:#1a3a1a;display:flex;align-items:center;justify-content:center;margin:0 auto 24px}
+.card .icon svg{width:36px;height:36px}
+.card h1{font-size:22px;font-weight:700;margin-bottom:8px}
+.card p{color:#999;font-size:14px;line-height:1.6;margin-bottom:24px}
+.card .info{background:#1a1a1a;border-radius:10px;padding:16px 20px;text-align:left;margin-bottom:28px}
+.card .info div{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #222}
+.card .info div:last-child{border-bottom:none}
+.card .info .lbl{color:#999}
+.card .info .val{color:#ffd500;font-weight:600}
+.btn{display:inline-block;padding:14px 48px;background:#004ccc;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s}
+.btn:hover{background:#0038a0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">
+    <svg fill="none" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#27ae60" stroke="#27ae60" stroke-width="2"/><path d="M14 24l7 7 13-13" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <h1>Order Confirmed!</h1>
+  <p>Your tickets have been booked successfully.<br>We will send your e-tickets to your phone and email shortly. Please check your inbox.</p>
+  <div class="info" id="order-info">
+    <div><span class="lbl">Order</span><span class="val" id="o-movie">—</span></div>
+    <div><span class="lbl">Theatre</span><span class="val" id="o-theatre">—</span></div>
+    <div><span class="lbl">Date</span><span class="val" id="o-date">—</span></div>
+    <div><span class="lbl">Tickets</span><span class="val" id="o-tickets">—</span></div>
+    <div><span class="lbl">Total</span><span class="val" id="o-total">$0.00</span></div>
+  </div>
+  <a href="/" class="btn">Back to Home</a>
+</div>
+<script>
+try{
+var p=new URLSearchParams(location.search);
+var data=JSON.parse(atob(p.get('d')||''));
+document.getElementById('o-movie').textContent=data.movie||'—';
+document.getElementById('o-theatre').textContent=data.theatre||'—';
+document.getElementById('o-date').textContent=data.date||'—';
+document.getElementById('o-tickets').textContent=data.tickets||'—';
+document.getElementById('o-total').textContent='$'+(data.total||0).toFixed(2);
+}catch(e){}
+</script>
+</body>
+</html>

