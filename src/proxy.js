@@ -344,12 +344,12 @@ export function createCineplexProxy(publicHost) {
             return;
           }
         }
-        await queueUpstream();
         proxyReq.setHeader('Host', targetHost);
         proxyReq.removeHeader('accept-encoding');
         proxyReq.setHeader('origin', 'https://www.cineplex.com');
         proxyReq.setHeader('referer', 'https://www.cineplex.com/');
         proxyReq.setHeader('user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+        await queueUpstream();
       },
 
       proxyRes: (proxyRes, req, res) => {
