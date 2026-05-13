@@ -506,7 +506,7 @@
 #notification-icon{display:inline-block;background:#c00;color:#fff;font-size:10px;width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;margin-left:2px;vertical-align:top}
 #ui-datepicker-div{display:none}
 .deliver-calendar{cursor:pointer}
-.date-picker-popup{position:absolute;z-index:1000;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.15);padding:10px;font-family:Arial,sans-serif;font-size:13px;width:260px}
+.date-picker-popup{position:fixed;z-index:1000;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.15);padding:10px;font-family:Arial,sans-serif;font-size:13px;width:260px}
 .date-picker-popup .dp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .date-picker-popup .dp-header button{background:none;border:1px solid #ccc;border-radius:3px;cursor:pointer;padding:2px 8px;font-size:12px}
 .date-picker-popup .dp-header button:hover{background:#007fff;color:#fff;border-color:#007fff}
@@ -519,6 +519,7 @@
 .date-picker-popup td span.today{font-weight:700;color:#007fff}
 .date-picker-popup td span.selected{background:#007fff;color:#fff}
 .date-picker-popup td span.other-month{color:#ccc}
+.date-picker-popup td span.past{color:#ccc;cursor:not-allowed;pointer-events:none}
 .field-error{display:none;color:#c00;font-size:12px;margin-top:2px;font-weight:700}
 .input-error{border-color:#c00!important;outline-color:#c00!important}
 </style>
@@ -595,10 +596,11 @@ html+='<span class="other-month" data-date="'+(m===0?y-1:y)+'-'+(m===0?12:m)+'-'
 var nn=cell-totalDays+1;
 html+='<span class="other-month" data-date="'+(m===11?y+1:y)+'-'+(m===11?1:m+2)+'-'+nn+'">'+nn+'</span>';
 }else{
-cell++; d.setDate(cell);
+ cell++; d.setDate(cell);
 var ds=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 var cls='';
-if(d.getTime()===today.getTime())cls+=' today';
+if(d.getTime()<today.getTime())cls+=' past';
+else if(d.getTime()===today.getTime())cls+=' today';
 if(fmt(d)===curSel)cls+=' selected';
 html+='<span class="'+cls.trim()+'" data-date="'+ds+'">'+cell+'</span>';
 }
@@ -614,9 +616,9 @@ return html
 function openPopup(curDate){
 if(popup){closePopup();return}
 popup=document.createElement('div');popup.className='date-picker-popup';popup.innerHTML=buildPopup(curDate);
-var rect=cal.getBoundingClientRect();
-popup.style.top=(rect.bottom+window.scrollY+4)+'px';
-popup.style.left=(rect.left+window.scrollX)+'px';
+ var rect=cal.getBoundingClientRect();
+popup.style.top=(rect.bottom+4)+'px';
+popup.style.left=rect.left+'px';
 document.body.appendChild(popup);
 
 popup.querySelector('.dp-prev').addEventListener('click',function(e){e.stopPropagation();var d=new Date(curDate);d.setMonth(d.getMonth()-1);popup.innerHTML=buildPopup(d);bindDayClicks(d)});
