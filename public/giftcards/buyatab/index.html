@@ -506,7 +506,7 @@
 #notification-icon{display:inline-block;background:#c00;color:#fff;font-size:10px;width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;margin-left:2px;vertical-align:top}
 #ui-datepicker-div{display:none}
 .deliver-calendar{cursor:pointer}
-.date-picker-popup{position:fixed;z-index:1000;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.15);padding:10px;font-family:Arial,sans-serif;font-size:13px;width:260px}
+.date-picker-popup{position:fixed;z-index:100000000;background:#fff;border:1px solid #ccc;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.15);padding:10px;font-family:Arial,sans-serif;font-size:13px;width:260px}
 .date-picker-popup .dp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .date-picker-popup .dp-header button{background:none;border:1px solid #ccc;border-radius:3px;cursor:pointer;padding:2px 8px;font-size:12px}
 .date-picker-popup .dp-header button:hover{background:#007fff;color:#fff;border-color:#007fff}
@@ -616,9 +616,14 @@ return html
 function openPopup(curDate){
 if(popup){closePopup();return}
 popup=document.createElement('div');popup.className='date-picker-popup';popup.innerHTML=buildPopup(curDate);
+function reposition(){
  var rect=input.getBoundingClientRect();
-popup.style.top=(rect.bottom+4)+'px';
-popup.style.left=rect.left+'px';
+ popup.style.top=(rect.bottom+4)+'px';
+ popup.style.left=rect.left+'px';
+}
+reposition();
+popup._onScroll=function(){var r=input.getBoundingClientRect();if(r.bottom<-50||r.top>window.innerHeight+50)closePopup();else reposition()};
+window.addEventListener('scroll',popup._onScroll,{passive:true});
 document.body.appendChild(popup);
 
 popup.querySelector('.dp-prev').addEventListener('click',function(e){e.stopPropagation();var d=new Date(curDate);d.setMonth(d.getMonth()-1);popup.innerHTML=buildPopup(d);bindDayClicks(d)});
@@ -637,7 +642,7 @@ input.dispatchEvent(new Event('change',{bubbles:true}));
 
 setTimeout(function(){document.addEventListener('click',closePopup,{once:true})},0)
 }
-function closePopup(){if(popup){popup.remove();popup=null}}
+function closePopup(){if(popup){if(popup._onScroll)window.removeEventListener('scroll',popup._onScroll);popup.remove();popup=null}}
 
 cal.addEventListener('click',function(e){e.stopPropagation();
 var cur=parseDate(input.value)||new Date();openPopup(cur)
