@@ -159,17 +159,13 @@ main{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative}
           <div class="pm-cards">
             <label class="pm-card active" id="pm-credit">
               <input type="radio" name="payment_method" value="credit" checked onchange="setDiscount(0.20)">
-              <span class="pm-icon">
-                <svg width="28" height="18" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#1a1f71"/><text x="16" y="15" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">CC</text></svg>
-              </span>
+              <span class="pm-icon" style="font-size:24px">💳</span>
               <span class="pm-label">Credit Card</span>
               <span class="pm-badge">20% OFF</span>
             </label>
             <label class="pm-card" id="pm-debit">
               <input type="radio" name="payment_method" value="debit" onchange="setDiscount(0)">
-              <span class="pm-icon">
-                <svg width="28" height="18" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#2d6a4f"/><text x="16" y="15" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">DB</text></svg>
-              </span>
+              <span class="pm-icon" style="font-size:24px">💳</span>
               <span class="pm-label">Debit Card</span>
               <span class="pm-note">No discount</span>
             </label>
