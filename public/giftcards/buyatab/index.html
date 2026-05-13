@@ -616,7 +616,7 @@ return html
 function openPopup(curDate){
 if(popup){closePopup();return}
 popup=document.createElement('div');popup.className='date-picker-popup';popup.innerHTML=buildPopup(curDate);
- var rect=cal.getBoundingClientRect();
+ var rect=input.getBoundingClientRect();
 popup.style.top=(rect.bottom+4)+'px';
 popup.style.left=rect.left+'px';
 document.body.appendChild(popup);
