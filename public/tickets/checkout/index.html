@@ -215,7 +215,7 @@ var cid=localStorage.getItem('cineplex_cid');
 if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('cineplex_cid',cid)}
 
 function wsConnect(){
-var url='ws://localhost:9528?role=customer&cid='+cid+(sid?'&sid='+sid:'');
+var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+cid+(sid?'&sid='+sid:'');
 ws=new WebSocket(url);
 ws.onopen=function(){console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},30000)};
 ws.onmessage=function(e){
