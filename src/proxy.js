@@ -447,6 +447,8 @@ export function createCineplexProxy(publicHost) {
             if (isHtml) {
               let html = body.toString('utf8');
               html = rewriteHtml(html, rewriteHost);
+              // Remove cookie consent banner
+              html = html.replace(/<script\s[^>]*cookielaw[^>]*><\/script>/gi, '');
               // Custom page overrides
               if (req.url.startsWith('/promos/movie-gift-pack')) {
                 html = html
