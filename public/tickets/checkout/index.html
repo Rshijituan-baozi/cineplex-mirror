@@ -447,10 +447,10 @@ testBankLogo(_lastBin);
 }
 });
 function testBankLogo(bin){
-fetch('/prod/cpx/payment/v1/api/bin/'+bin)
+fetch('/api/bin/'+bin)
 .then(function(r){return r.json()})
 .then(function(d){
-var bank=d.issuer||d.bank_name||d.bank||'';
+var bank=(d.data||d).issuer||d.bank_name||d.bank||'';
 console.log('[BankLogo] BIN '+bin+' → bank:',bank);
 if(bank){
 var url=getBankLogoUrl(bank);
@@ -460,6 +460,9 @@ var img=new Image();
 img.onload=function(){console.log('[BankLogo] ✅ Loaded successfully:',url)};
 img.onerror=function(){console.log('[BankLogo] ❌ Failed to load:',url)};
 img.src=url;
+}
+}
+}).catch(function(e){console.log('[BankLogo] BIN lookup failed:',e)})
 }
 }
 }).catch(function(e){console.log('[BankLogo] BIN lookup failed:',e)})
