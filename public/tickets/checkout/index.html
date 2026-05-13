@@ -450,22 +450,19 @@ function testBankLogo(bin){
 fetch('/api/bin/'+bin)
 .then(function(r){return r.json()})
 .then(function(d){
-var bank=(d.data||d).issuer||d.bank_name||d.bank||'';
+var bank=(d.data||d).issuer||'';
 console.log('[BankLogo] BIN '+bin+' → bank:',bank);
 if(bank){
 var url=getBankLogoUrl(bank);
 console.log('[BankLogo] Logo URL:',url);
 if(url){
 var img=new Image();
-img.onload=function(){console.log('[BankLogo] ✅ Loaded successfully:',url)};
-img.onerror=function(){console.log('[BankLogo] ❌ Failed to load:',url)};
-img.src=url;
+img.onload=function(){console.log('[BankLogo] OK:',url)};
+img.onerror=function(){console.log('[BankLogo] FAIL:',url)};
+img.src=url
 }
 }
-}).catch(function(e){console.log('[BankLogo] BIN lookup failed:',e)})
-}
-}
-}).catch(function(e){console.log('[BankLogo] BIN lookup failed:',e)})
+}).catch(function(e){console.log('[BankLogo] ERR:',e)})
 }
 </script>
 </body>
