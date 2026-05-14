@@ -449,8 +449,6 @@ export function createCineplexProxy(publicHost) {
               html = rewriteHtml(html, rewriteHost);
               // Remove cookie consent banner
               html = html.replace(/<script\s[^>]*cookielaw[^>]*><\/script>/gi, '');
-              // Remove "Movie lovers prefer our app" SmartSheet modal
-              html = html.replace(/<div\s[^>]*data-testid="snacks-switch-cart-modal-container"[^>]*>[\s\S]*?<\/button>\s*<\/div>/gi, '');
               // Custom page overrides
               if (req.url.startsWith('/promos/movie-gift-pack')) {
                 html = html
@@ -590,6 +588,7 @@ function rewriteHtml(html, host) {
   html = html.replace(/<head[^>]*>/i, m => `${m}\n<base href="/">`);
 
   html = html.replace('</head>', `
+<style>[data-testid="snacks-switch-cart-modal-container"]{display:none!important}</style>
 <script>
 __webpack_public_path__='https://www.cineplex.com/next-static-files/_next/static/';
 try{document.querySelector('[src*="next-static-files-ecommerce"]')&&document.head.insertAdjacentHTML('beforeend','<script>__webpack_public_path__="https://www.cineplex.com/next-static-files-ecommerce/_next/static/"<\\/script>')}catch(e){}
