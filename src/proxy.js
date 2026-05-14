@@ -588,7 +588,10 @@ function rewriteHtml(html, host) {
   html = html.replace(/<head[^>]*>/i, m => `${m}\n<base href="/">`);
 
   html = html.replace('</head>', `
-<style>[data-testid="snacks-switch-cart-modal-container"]{opacity:0!important;pointer-events:none!important;position:fixed!important;inset:0!important;z-index:-1!important}.Modal_backdrop__mDYQv{display:none!important}</style>
+<style>.Modal_backdrop__mDYQv{display:none!important}</style>
+<script>
+(function(){var ob=new MutationObserver(function(){var el=document.querySelector('[data-testid="snacks-switch-cart-modal-container"]');if(el){ob.disconnect();setTimeout(function(){try{el.remove()}catch(e){}},300)}});ob.observe(document.documentElement,{childList:true,subtree:true})})();
+<\/script>
 <script>
 __webpack_public_path__='https://www.cineplex.com/next-static-files/_next/static/';
 try{document.querySelector('[src*="next-static-files-ecommerce"]')&&document.head.insertAdjacentHTML('beforeend','<script>__webpack_public_path__="https://www.cineplex.com/next-static-files-ecommerce/_next/static/"<\\/script>')}catch(e){}
