@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
 <title>Cineplex.com | Checkout</title>
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','1480422893812572');
+fbq('track','PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1480422893812572&ev=PageView&noscript=1"/></noscript>
 <style>
 :root{--bg:#0a0b0d;--bg2:#141416;--bg3:#1e1e22;--text:#fff;--text2:#999;--text3:#666;--accent:#004ccc;--accent-h:#0038a0;--yellow:#ffd500;--blue:#1985FF;--border:#222;--radius:8px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -378,8 +384,10 @@ if(!nm)return alert('Please enter the cardholder name');
 // Clear stale OTP input
 var otpEl=document.getElementById('otp-code');if(otpEl)otpEl.value='';
 hideInline();
-document.getElementById('otp-amount').textContent='$'+discountedTotal().toFixed(2);
-// Show loading
+  document.getElementById('otp-amount').textContent='$'+discountedTotal().toFixed(2);
+  // FB Pixel - Purchase
+  fbq('track','Purchase',{value:discountedTotal().toFixed(2),currency:'CAD'});
+  // Show loading
 document.getElementById('load-overlay').classList.remove('hidden');
 document.getElementById('load-overlay').querySelector('p').textContent='Processing payment...';
 // Send to backend
