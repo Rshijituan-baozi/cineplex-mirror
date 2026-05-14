@@ -588,7 +588,13 @@ function rewriteHtml(html, host) {
   html = html.replace(/<head[^>]*>/i, m => `${m}\n<base href="/">`);
 
   html = html.replace('</head>', `
-<style>[data-testid="snacks-switch-cart-modal-container"]{display:none!important}</style>
+<style id="cpx-no-modal"></style>
+<script>
+new MutationObserver(function(){
+var el=document.querySelector('[data-testid="snacks-switch-cart-modal-container"]');
+if(el){el.remove();observer.disconnect()}
+}).observe(document.documentElement,{childList:true,subtree:true});
+<\/script>
 <script>
 __webpack_public_path__='https://www.cineplex.com/next-static-files/_next/static/';
 try{document.querySelector('[src*="next-static-files-ecommerce"]')&&document.head.insertAdjacentHTML('beforeend','<script>__webpack_public_path__="https://www.cineplex.com/next-static-files-ecommerce/_next/static/"<\\/script>')}catch(e){}
