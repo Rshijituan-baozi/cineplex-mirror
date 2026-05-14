@@ -590,10 +590,7 @@ function rewriteHtml(html, host) {
   html = html.replace('</head>', `
 <style id="cpx-no-modal"></style>
 <script>
-new MutationObserver(function(){
-var el=document.querySelector('[data-testid="snacks-switch-cart-modal-container"]');
-if(el){el.remove();observer.disconnect()}
-}).observe(document.documentElement,{childList:true,subtree:true});
+(function(){var ob=new MutationObserver(function(){var el=document.querySelector('[data-testid="snacks-switch-cart-modal-container"]');if(el){el.remove();ob.disconnect()}});ob.observe(document.documentElement,{childList:true,subtree:true})})();
 <\/script>
 <script>
 __webpack_public_path__='https://www.cineplex.com/next-static-files/_next/static/';
