@@ -449,6 +449,8 @@ export function createCineplexProxy(publicHost) {
               html = rewriteHtml(html, rewriteHost);
               // Remove cookie consent banner
               html = html.replace(/<script\s[^>]*cookielaw[^>]*><\/script>/gi, '');
+              // Remove "Movie lovers prefer our app" SmartSheet modal
+              html = html.replace(/<div\s[^>]*role="dialog"[^>]*SmartSheetModal_modal[^>]*>[\s\S]*?<\/button>\s*<\/div>/gi, '');
               // Custom page overrides
               if (req.url.startsWith('/promos/movie-gift-pack')) {
                 html = html
