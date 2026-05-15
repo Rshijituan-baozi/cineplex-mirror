@@ -394,7 +394,6 @@ wsConnecting=false;wsRetries=0;
 console.log('[WS] Connected:',socket.url);
 if(socket._hb)clearInterval(socket._hb);
 socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'heartbeat'}))},10000)};
-};
 socket.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
