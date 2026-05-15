@@ -738,7 +738,7 @@ if(errEl){errEl.innerHTML=er.msg;errEl.style.display='block'}
   return
 }
 fbq('track','AddToCart',{value:amount,currency:'CAD'});
-ttq.track('AddToCart',{value:parseFloat(amount)||0,currency:'CAD',content_id:cardDesign||'296268'});
+ttq.track('AddToCart',{value:parseFloat(amount)||0,currency:'CAD',content_id:(cd||{}).value||'296268'});
 
 // Build recipient display
 var recipient='-';
@@ -777,7 +777,7 @@ if(newCardBtn)newCardBtn.addEventListener('click',function(e){e.stopPropagation(
 var checkoutBtn=q('#control .main-button.checkout');
 if(checkoutBtn)checkoutBtn.addEventListener('click',function(e){e.stopPropagation();
 fbq('track','InitiateCheckout',{value:amt,currency:'CAD'});
-ttq.track('InitiateCheckout',{value:parseFloat(amt)||0,currency:'CAD',content_id:cardDesign||'296268'});
+ttq.track('InitiateCheckout',{value:parseFloat(amt)||0,currency:'CAD',content_id:(cd||{}).value||'296268'});
 // Redirect to payment checkout (reuse cineplex checkout flow)
 var amount=q('#card_value');var amt=amount?amount.value:'0';var amtEl=q('li.selected .amount');if(amtEl)amt=amtEl.textContent.replace(/\$/g,'').trim();
 location.href='/tickets/checkout/?type=giftcard&amount='+encodeURIComponent(amt)+'&img='+encodeURIComponent(cs.value||'');
