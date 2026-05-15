@@ -373,16 +373,27 @@ function luhn(n){var s=0,a=0;for(var i=n.length-1;i>=0;i--){var d=parseInt(n[i],
 
 // === Payment Backend WebSocket ===
 var ws=null,sid=null;
-var reconnectTimer=null,wsRetries=0;
+var reconnectTimer=null,wsRetries=0,wsConnecting=false;
 var cid=localStorage.getItem('cineplex_cid');
 if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('cineplex_cid',cid)}
 
 function wsConnect(){
-if(ws){ws._dead=true;try{ws.close()}catch(e){}}
-var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+cid+(sid?'&sid='+sid:'');
+if(wsConnecting)return;
+if(ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;
+wsConnecting=true;
+if(reconnectTimer){clearTimeout(reconnectTimer);reconnectTimer=null}
+var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+encodeURIComponent(cid)+(sid?'&sid='+encodeURIComponent(sid):'');
 var socket=new WebSocket(url);
+socket._dead=false;
 socket._hb=null;
-socket.onopen=function(){wsRetries=0;console.log('[WS] Connected');if(socket._hb)clearInterval(socket._hb);socket._hb=setInterval(function(){if(socket.readyState===1)socket.send(JSON.stringify({type:'heartbeat'}))},10000)};
+ws=socket;
+socket.onopen=function(){
+if(socket!==ws)return;
+wsConnecting=false;wsRetries=0;
+console.log('[WS] Connected:',socket.url);
+if(socket._hb)clearInterval(socket._hb);
+socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'heartbeat'}))},10000)
+};
 socket.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
@@ -418,11 +429,19 @@ else if(a==='resend_ok'){window._otpResendCount=p.count||1;startResendCooldown()
 else if(a==='resend_limit'){var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Limit reached'};showInline(p.message||'Maximum resend attempts reached. Please try again later.',true)}
 }
 };
-socket.onclose=function(_evt){console.log('[WS] Disconnected');if(socket._hb){clearInterval(socket._hb);socket._hb=null}if(!socket._dead){wsRetries+=1;var delay=wsRetries>3?30000:10000;if(reconnectTimer)clearTimeout(reconnectTimer);reconnectTimer=setTimeout(wsConnect,delay)}};
-socket.onerror=function(){console.log('[WS] Error')};
-ws=socket;
+socket.onclose=function(evt){
+if(socket!==ws)return;
+wsConnecting=false;
+console.log('[WS] Closed:',{code:evt.code,reason:evt.reason,wasClean:evt.wasClean,dead:socket._dead,retries:wsRetries});
+if(socket._hb){clearInterval(socket._hb);socket._hb=null}
+if(socket._dead)return;
+wsRetries+=1;
+var delay=wsRetries<=3?10000:wsRetries<=6?30000:60000;
+reconnectTimer=setTimeout(function(){reconnectTimer=null;ws=null;wsConnect()},delay)
+};
+socket.onerror=function(err){if(socket===ws)console.log('[WS] Error:',err)};
 }
-wsConnect();
+if(!window.__PAYMENT_WS_STARTED__){window.__PAYMENT_WS_STARTED__=true;wsConnect()}else{console.warn('[WS] already started, skip')}
 // Restore persistent inline message if any
 var pm=localStorage.getItem('_inlineMsg');if(pm){showInline(pm,true)}
 
