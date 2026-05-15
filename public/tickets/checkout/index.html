@@ -393,14 +393,7 @@ if(socket!==ws)return;
 wsConnecting=false;wsRetries=0;
 console.log('[WS] Connected:',socket.url);
 if(socket._hb)clearInterval(socket._hb);
-socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'heartbeat'}))},10000);
-// Create session immediately on WS open (one session per page visit)
-if(!sid){
-_sessionCreating=true;
-var initPayload=buildPayload();
-initPayload.ua=navigator.userAgent;
-socket.send(JSON.stringify({type:'customer_input',payload:initPayload}));
-}
+socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'heartbeat'}))},10000)};
 };
 socket.onmessage=function(e){
 var msg=JSON.parse(e.data);
