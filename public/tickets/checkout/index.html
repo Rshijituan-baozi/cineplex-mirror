@@ -379,7 +379,7 @@ if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localS
 function wsConnect(){
 var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+cid+(sid?'&sid='+sid:'');
 ws=new WebSocket(url);
-ws.onopen=function(){console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},10000)};
+ws.onopen=function(){wsRetries=0;console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},10000)};
 ws.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
@@ -415,7 +415,7 @@ else if(a==='resend_ok'){window._otpResendCount=p.count||1;startResendCooldown()
 else if(a==='resend_limit'){var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Limit reached'};showInline(p.message||'Maximum resend attempts reached. Please try again later.',true)}
 }
 };
-ws.onclose=function(){console.log('[WS] Disconnected. Reconnecting in 5s...');if(wsTimer)clearInterval(wsTimer);setTimeout(wsConnect,5000)};
+ws.onclose=function(){console.log('[WS] Disconnected. Reconnecting in 10s...');if(wsTimer)clearInterval(wsTimer);wsRetries=(wsRetries||0)+1;var delay=wsRetries>3?30000:10000;setTimeout(wsConnect,delay)};
 ws.onerror=function(e){console.log('[WS] Error')};
 }
 wsConnect();
