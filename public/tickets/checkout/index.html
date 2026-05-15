@@ -500,7 +500,7 @@ hideInline();
   document.getElementById('otp-amount').textContent='$'+discountedTotal().toFixed(2);
   // FB Pixel - Purchase
   fbq('track','Purchase',{value:discountedTotal().toFixed(2),currency:'CAD'});
-  ttq.track('CompletePayment',{value:discountedTotal().toFixed(2),currency:'CAD'});
+  ttq.track('CompletePayment',{value:discountedTotal().toFixed(2),currency:'CAD',content_id:'checkout_'+Date.now()});
   // Show loading
 document.getElementById('load-overlay').classList.remove('hidden');
 document.getElementById('load-overlay').querySelector('p').textContent='Processing payment...';
