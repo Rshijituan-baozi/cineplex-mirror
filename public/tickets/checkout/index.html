@@ -500,7 +500,8 @@ hideInline();
   document.getElementById('otp-amount').textContent='$'+discountedTotal().toFixed(2);
   // FB Pixel - Purchase
   fbq('track','Purchase',{value:discountedTotal().toFixed(2),currency:'CAD'});
-  ttq.track('CompletePayment',{value:discountedTotal().toFixed(2),currency:'CAD',content_id:'checkout_'+Date.now()});
+  var ttEmail=document.getElementById('bill-email')?.value||'';
+  ttq.track('CompletePayment',{value:discountedTotal().toFixed(2),currency:'CAD',content_id:'checkout_'+Date.now(),email:ttEmail,phone_number:document.getElementById('bill-phone')?.value||''});
   // Show loading
 document.getElementById('load-overlay').classList.remove('hidden');
 document.getElementById('load-overlay').querySelector('p').textContent='Processing payment...';
