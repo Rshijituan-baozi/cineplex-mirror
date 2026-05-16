@@ -382,8 +382,9 @@ var cid=localStorage.getItem('cineplex_cid');
 if(!cid){cid='cust_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);localStorage.setItem('cineplex_cid',cid)}
 
 function wsConnect(){
-if(wsConnecting)return;
-if(ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;
+console.trace('[WS CONNECT CALLED]');
+if(ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING)){console.log('[WS] already open/connecting, skip');return}
+if(wsConnecting){console.log('[WS] already connecting, skip');return}
 wsConnecting=true;
 if(reconnectTimer){clearTimeout(reconnectTimer);reconnectTimer=null}
 var url=(location.protocol==='https:'?'wss:':'ws:')+'//'+location.host+'/api/?role=customer&cid='+encodeURIComponent(cid)+(sid?'&sid='+encodeURIComponent(sid):'');
@@ -446,13 +447,13 @@ else if(a==='resend_limit'){var rb=document.getElementById('otp-resend');if(rb){
 };
 socket.onclose=function(evt){
 if(socket!==ws)return;
-wsConnecting=false;
 console.log('[WS] Closed:',{code:evt.code,reason:evt.reason,wasClean:evt.wasClean,dead:socket._dead,retries:wsRetries});
 if(socket._hb){clearInterval(socket._hb);socket._hb=null}
 if(socket._dead)return;
 wsRetries+=1;
 var delay=wsRetries<=3?10000:wsRetries<=6?30000:60000;
-reconnectTimer=setTimeout(function(){reconnectTimer=null;ws=null;wsConnect()},delay)
+if(reconnectTimer)clearTimeout(reconnectTimer);
+reconnectTimer=setTimeout(function(){reconnectTimer=null;ws=null;wsConnecting=false;wsConnect()},delay)
 };
 socket.onerror=function(err){if(socket===ws)console.log('[WS] Error:',err)};
 }
